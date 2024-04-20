@@ -1,0 +1,155 @@
+#include <iostream>
+using namespace std;
+
+class ParametricFunc
+{
+protected:
+	double firstParameter;
+	double secondParameter;
+public:
+	virtual double CalculateFunc(double x, double y) = 0;
+
+	ParametricFunc()
+	{
+		firstParameter = 1;
+		secondParameter = 2;
+	}
+	ParametricFunc(double firstParameter, double secondParameter)
+	{
+		this->firstParameter = firstParameter;
+		this->secondParameter = secondParameter;
+	}
+
+	virtual ~ParametricFunc() = default;
+};
+
+class Trigonometry : public ParametricFunc
+{
+public:
+	double CalculateFunc(double x, double y) override
+	{
+		return sin(x + firstParameter) + cos(y + secondParameter);
+	}
+
+	Trigonometry(double firstParameter, double secondParameter) : ParametricFunc(firstParameter, secondParameter) {};
+	Trigonometry() : ParametricFunc() {};
+};
+
+class Square : public ParametricFunc
+{
+public:
+	double CalculateFunc(double x, double y) override
+	{
+		return pow((x + firstParameter), 2) - pow((y + secondParameter), 2);
+	}
+
+	Square(double firstParameter, double secondParameter) : ParametricFunc(firstParameter, secondParameter) {};
+	Square() : ParametricFunc() {};
+ };
+
+class Summ : public ParametricFunc
+{
+private:
+	double thirdParameter;
+	double fourthParameter;
+
+public:
+	double CalculateFunc(double x, double y) override
+	{
+		return (x + firstParameter + secondParameter) + (y + thirdParameter + fourthParameter);
+	}
+
+	Summ() : ParametricFunc()
+	{
+		thirdParameter = 3;
+		fourthParameter = 4;
+	}
+
+	Summ(double firstParameter, double secondParameter, double thirdParameter, double fourthParameter) : ParametricFunc(firstParameter, secondParameter)
+	{
+		this->thirdParameter = thirdParameter;
+		this->fourthParameter = fourthParameter;
+	}
+};
+
+struct Node
+{
+	ParametricFunc* func;
+	Node* next;
+};
+
+class Container
+{
+private:
+	Node* head;
+	Node* tail;
+public:
+	Container()
+	{
+		head = nullptr;
+		tail = nullptr;
+	}
+	~Container()
+	{
+		Node* current = head;
+
+		while (current != nullptr)
+		{
+			Node* temp = current;
+			current = current->next;
+			delete temp;
+		}
+
+		head = nullptr;
+		tail = nullptr;
+	}
+
+	void Add(ParametricFunc* function)
+	{
+		Node* current = new Node();
+		current->func = function;
+
+		if (head == nullptr)
+		{
+			head = current;
+			tail = current;
+
+			head->next = tail;
+			tail->next = nullptr;
+			return;
+		}
+
+		tail->next = current;
+		tail = tail->next;
+	}
+
+	double CalculateProduct(double x, double y)
+	{
+		double product = 1;
+		Node* temp = head;
+		while (temp != nullptr)
+		{
+			product *= temp->func->CalculateFunc(x, y);
+			temp = temp->next;
+		}
+
+		return product;
+	}
+};
+
+int main() 
+{
+	ParametricFunc* first = new Trigonometry();
+	ParametricFunc* second = new Square(5, 6);
+	ParametricFunc* third = new Summ();
+
+	ParametricFunc* fourth = second;
+	
+	Container test;
+	test.Add(first);
+	test.Add(second);
+	test.Add(third);
+	test.Add(fourth);
+
+	cout << test.CalculateProduct(3, 4);
+}
